@@ -1,0 +1,8 @@
+Specifications:
+-Add courses
+	- takes input of course code, term subject can be taken, prerequisits
+	- outputs degree timeline/ timetable (over the course of multiple years)
+-can switch/ move courses around the timetable
+	- if error occurs, such as if any of the switched courses does not meet preconditions
+
+
