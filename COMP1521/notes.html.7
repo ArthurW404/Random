@@ -1,0 +1,1341 @@
+<html>
+<head>
+<title>Week 08 Lectures</title>
+<link href='notes.css' rel='stylesheet' type='text/css'>
+</head>
+<body>
+<p><span class='title'>Week 08 Lectures</span><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Assignment 2</span></td><td align='right'><small>1/77</small></td></tr></table>
+<p>
+Implement your own version of <large><code>malloc()</code></large> and <large><code>free()</code></large>
+<ul>
+<li> manage a large region of memory as a <em>heap</em>
+<li> consists of <em>chunks</em> of space that are <em>allocated</em> or <em>free</em>
+<li> call to <large><code>myMalloc()</code></large> converts a free chunk to allocated
+<li> call to <large><code>myFree()</code></large> converts an allocated chunk to free
+<li> maintain a list of free chunks, merge adjacent free chunks
+</ul>
+<br>
+<p><div class='center'>
+<img alt="[Diagram:Pics/ass2/init-small.png]" src="Pics/ass2/init-small.png">
+</div><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Assignment 2</span></td><td align='right'><small>2/77</small></td></tr></table>
+<p>
+Code structured as a library, with several testing clients
+<p>
+<large><font color="#008800"><b><code>myHeap.h</code></b></font></large>
+<ul>
+<li> function interfaces
+</ul>
+<large><font color="#008800"><b><code>myHeap.c</code></b></font></large>
+<ul>
+<li> private data structure for heap &nbsp;<small>(defined as <large><code>static</code></large>)</small>
+<li> implementation of heap functions for interface
+<li> implementation of any other private heap functions
+</ul>
+<large><font color="#008800"><b><code>test1.c</code></b></font></large>, <large><font color="#008800"><b><code>test2.c</code></b></font></large>, <large><font color="#008800"><b><code>test3.c</code></b></font></large>
+<ul>
+<li> three client programs that use the <large><code>myHeap</code></large> functions
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Assignment 2</span></td><td align='right'><small>3/77</small></td></tr></table>
+<p>
+Simple client that uses <large><code>myHeap</code></large>
+<p><pre>
+#include "myHeap.h"
+...
+int main()
+{
+   <font color='#0000CC'>initHeap</font>(10000);
+   char *str = <font color='#0000CC'>myMalloc</font>(20);
+   strcpy(str, "some words");
+   printf("str: \"%s\"\n", str);
+   <font color='#0000CC'>myFree</font>(str);
+   <comment>... lots more malloc/free'ing ...</comment>
+   <font color='#0000CC'>freeHeap</font>();
+   return 0;
+}
+</pre><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Assignment 2</span></td><td align='right'><small>4/77</small></td></tr></table>
+<p>
+<large><font color="#008800"><b><code>initHeap(int N)</code></b></font></large>
+<ul>
+<li> adjust <large><code>N</code></large> so <large><code>(N%4==0)</code></large> and at least <large><code>MIN_HEAP</code></large>
+<li> allocate a region of memory with <large><code>N</code></large> bytes &nbsp;(<large><code>heapMem</code></large>)
+<li> allocate an array of <large><code>N/MIN_CHUNK</code></large> pointers &nbsp;(<large><code>freeList</code></large>)
+<li> set <large><code>heapMem</code></large> to be all zeroes
+<li> set <large><code>heapMem</code></large> to be a single free chunk of size <large><code>N</code></large>
+<li> make this chunk the only entry in <large><code>freeList[]</code></large>
+</ul>
+<p><div class='center'>
+<img alt="[Diagram:Pics/ass2/init-small.png]" src="Pics/ass2/init-small.png">
+</div><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Assignment 2</span></td><td align='right'><small>5/77</small></td></tr></table>
+<p>
+<large><font color="#008800"><b><code>freeHeap()</code></b></font></large>
+<ul>
+<li> free memory associated with <large><code>heapMem</code></large> and <large><code>freeList</code></large>
+</ul>
+<large><font color="#008800"><b><code>dumpHeap()</code></b></font></large>
+<ul>
+<li> scan heap, printing info about each chunk
+</ul>
+<large><font color="#008800"><b><code>heapOffset(void *p)</code></b></font></large>
+<ul>
+<li> convert pointer <large><code>p</code></large> into heap offset <small>(or -1 if not in heap)</small>
+<li> offset = distance between <large><code>p</code></large> and <large><code>heapMem</code></large>
+</ul>
+<p><br>
+Note: the above functions are supplied
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Assignment 2</span></td><td align='right'><small>6/77</small></td></tr></table>
+<p>
+State of heap, part-way through execution of client ...
+<p><br>
+<p><div class='center'>
+<img alt="[Diagram:Pics/ass2/state-small.png]" src="Pics/ass2/state-small.png">
+</div><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Assignment 2</span></td><td align='right'><small>7/77</small></td></tr></table>
+<p>
+What the chunks in the heap look like ...
+<p>
+<p><div class='center'>
+<img alt="[Diagram:Pics/ass2/chunk-small.png]" src="Pics/ass2/chunk-small.png">
+</div><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Assignment 2</span></td><td align='right'><small>8/77</small></td></tr></table>
+<p>
+<large><font color="#008800"><b><code>void *myMalloc(int N)</code></b></font></large>
+<ul>
+<li> allocate a chunk to hold at least <large><code>N</code></large> data bytes
+<li> scan <large><code>freeList</code></large> to find <em>best-fit</em> free chunk
+<li> convert it to an allocated chunk
+<li> if large enough, split and make excess a new small free chunk
+</ul>
+<p><div class='center'>
+<img alt="[Diagram:Pics/ass2/malloc-small.png]" src="Pics/ass2/malloc-small.png">
+</div><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Assignment 2</span></td><td align='right'><small>9/77</small></td></tr></table>
+<p>
+<large><font color="#008800"><b><code>myFree(void *p)</code></b></font></large>
+<ul>
+<li> takes pointer to data block in allocated chunk
+<li> turns allocated chunk into free chunk (and zeroes it out)
+<li> if adjacent chunks are free, merge into single large free chunk
+<li> adjust <large><code>freeList</code></large> appropriately
+</ul>
+<p><div class='center'>
+<img alt="[Diagram:Pics/ass2/free-small.png]" src="Pics/ass2/free-small.png">
+</div><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Assignment 2</span></td><td align='right'><small>10/77</small></td></tr></table>
+<p>
+Free'ing with no merging ...
+<br>
+<p><div class='center'>
+<img alt="[Diagram:Pics/ass2/free-no-merge-small.png]" src="Pics/ass2/free-no-merge-small.png">
+</div><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Assignment 2</span></td><td align='right'><small>11/77</small></td></tr></table>
+<p>
+Free'ing with merging ...
+<br>
+<p><div class='center'>
+<img alt="[Diagram:Pics/ass2/merge-small.png]" src="Pics/ass2/merge-small.png">
+</div><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Assignment 2</span></td><td align='right'><small>12/77</small></td></tr></table>
+<p>
+<large><font color="#008800"><b><code>test3</code></b></font></large> program ...
+<ul>
+<li> reads sequence of malloc/free on variables <large><font color="#008800"><b><code>a</code></b></font></large> to <large><font color="#008800"><b><code>z</code></b></font></large>
+<li> allows you to test a variety of malloc/free scenarios
+</ul>
+Input to <large><code>test3</code></large>
+<p><pre>
+a = malloc 100
+b = malloc 50
+c = malloc 200
+free b
+d = malloc 40
+free a
+free d
+free c
+</pre><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='section'>Process Management</span></td><td align='right'></td></tr></table>
+<p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Process-related System Calls</span></td><td align='right'><small>14/77</small></td></tr></table>
+<p>
+Unix/Linux system calls:
+<ul>
+<li> <large><font color="#008800"><b><code>fork()</code></b></font></large> ... create a new process
+<li> <large><font color="#008800"><b><code>_exit()</code></b></font></large> ... terminate an executing process
+<li> <large><font color="#008800"><b><code>execve()</code></b></font></large> ... convert one process into another
+<li> <large><font color="#008800"><b><code>getpid()</code></b></font></large> ... get process ID
+<li> <large><font color="#008800"><b><code>getpgid()</code></b></font></large> ... get process group ID
+<li> <large><font color="#008800"><b><code>wait()</code></b></font></large> ... wait for state change in child process
+<li> <large><font color="#008800"><b><code>kill()</code></b></font></large> ... send a signal to a process
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Process-related System Calls</span></td><td align='right'><small>15/77</small></td></tr></table>
+<p>
+<large><font color="#008800"><b><code>pid_t fork(void)</code></b></font></large>
+<ul>
+<li> requires &nbsp;<large><code>#include &lt;unistd.h&gt;</code></large>
+<li> creates new process by duplicating the calling process
+<li> new process is the <em>child</em>, calling process is the <em>parent</em>
+<li> child has a different process ID (pid) to the parent
+<li> in the child, <large><code>fork()</code></large> returns 0
+<li> in the parent, <large><code>fork()</code></large> returns the pid of the child
+<li> if the system call fails, <large><code>fork()</code></large> returns -1
+<li> child inherits copies of parent's address space and open fd's
+</ul>
+Typically, the child pid is a small increment over the parent pid
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Process-related System Calls</span></td><td align='right'><small>16/77</small></td></tr></table>
+<p>
+Minimal example for <large><code>fork()</code></large>:
+<p><pre>
+#include &lt;stdio.h&gt;
+<font color='#000099'>#include &lt;unistd.h&gt;</font>
+
+int main(void)
+{
+   pid_t pid;
+   pid = <font color='#000099'>fork()</font>;
+   if (pid == 0)
+      printf("I am the child.\n");
+   else
+      printf("I am the parent.\n");
+   return 0;
+}
+</pre><p>
+<small>
+Note: doesn't really deal with <large><code>fork()</code></large> failure
+</small>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Process-related System Calls</span></td><td align='right'><small>17/77</small></td></tr></table>
+<p>
+Improved minimal example for <large><code>fork()</code></large>:
+<p><pre>
+#include &lt;stdio.h&gt;
+<font color='#000099'>#include &lt;unistd.h&gt;</font>
+
+int main(void)
+{
+   pid_t pid;
+   pid = <font color='#000099'>fork()</font>;
+   if (pid < 0)
+      perror("fork() failed");
+   else if (pid == 0)
+      printf("I am the child.\n");
+   else
+      printf("I am the parent.\n");
+   return 0;
+}
+</pre><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Exercise 1: Wrapper for fork()</span></td><td align='right'><small>18/77</small></td></tr></table>
+<p>
+Write a wrapper function for <large><code>fork()</code></large>
+<ul>
+<li> if <large><code>fork()</code></large> fails, write message and exit
+</ul>
+Use the function header:
+<p><pre>
+pid_t Fork() { ... }
+</pre><p>
+Show a usage to simplify the "minimal example".
+<p>
+Under what circumstances might <large><code>fork()</code></large> fail?
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Process-related System Calls</span></td><td align='right'><small>19/77</small></td></tr></table>
+<p>
+<large><font color="#008800"><b><code>void _exit(int status)</code></b></font></large>
+<ul>
+<li> terminates current process
+<li> closes any open file descriptors
+<li> a <large><code>SIGCHLD</code></large> signal is sent to parent
+<li> returns <large><code>status</code></large> to parent (via <large><code>wait()</code></large>)
+<li> any child processes are inherited by <large><code>init</code></large> (pid=1)
+<li> termination may be delayed waiting for i/o to complete
+</ul>
+<br>
+<small>
+On final exit, process's process table and page table entries are removed
+</small>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Process-related System Calls</span></td><td align='right'><small>20/77</small></td></tr></table>
+<p>
+<large><font color="#008800"><b><code>void exit(int status)</code></b></font></large>
+<ul>
+<li> terminates current process
+<li> triggers any functions registered as &nbsp; <large><code>atexit()</code></large>
+<li> flushes stdio buffers; closes open <large><code>FILE *</code></large>'s
+<li> then behaves like <large><code>_exit()</code></large>
+</ul>
+<br>
+Related function: &nbsp;<large><font color="#008800"><b><code>void abort(void)</code></b></font></large>
+<ul>
+<li> generates <large><code>SIGABRT</code></large> signal &nbsp;<small>(normally terminates process)</small>
+<li> closes and flushes stdio streams
+<li> used by the <large><code>assert()</code></large> macro
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Exercise 2: The <large><code>atexit()</code></large> Function</span></td><td align='right'><small>21/77</small></td></tr></table>
+<p>
+Set up a program using <large><code>atexit()</code></large> so that
+<ul>
+<li> it prints "Bye!" when the program exits
+<li> regardless of whether successfully or not
+</ul>
+What is the type of the <large><code>atexit()</code></large> function?
+<p>
+See <large><code>man 3 atexit</code></large>
+<br><p><br><p><br>
+What happens when programs don't terminate "nicely"?
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Process-related System Calls</span></td><td align='right'><small>22/77</small></td></tr></table>
+<p>
+<p><div class='center'>
+<img alt="[Diagram:Pics/misc/zombie-small.jpg]" src="Pics/misc/zombie-small.jpg">
+</div><p>
+<p>
+<div class='center'>
+<big>Zombie Process?</<big>
+<br>
+<p>
+<tiny>Photo credit: kenny Louie, Flickr.com</tiny>
+</div>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Process-related System Calls</span></td><td align='right'><small>23/77</small></td></tr></table>
+<p>
+When a process finishes, sends <large><code>SIGCHLD</code></large> signal to parent
+<p>
+<em>Zombie process</em> = a process which has exited but signal not handled
+<ul>
+<li> all processes become zombie until <large><code>SIGCHLD</code></large> handled
+<li> parent may be delayed e.g. slow i/o, but usually resolves quickly
+<li> bug in parent that ignores <large><code>SIGCHLD</code></large> creates long-term zombies
+<li> note that zombies occupy a slot in the process table
+</ul>
+<em>Orphan process</em> = a process whose parent has exited
+<ul>
+<li> when parent exits, orphan is assigned pid=1 as its parent
+<li> pid=1 always handles <large><code>SIGCHLD</code></large> when process exits
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Process-related System Calls</span></td><td align='right'><small>24/77</small></td></tr></table>
+<p>
+Getting information about a process ...
+<p>
+<large><font color="#008800"><b><code>pid_t getpid()</code></b></font></large>
+<ul>
+<li> requires &nbsp;<large><code>#include &lt;sys/types.h&gt;</code></large>
+<li> returns the process ID of the current process
+</ul>
+<large><font color="#008800"><b><code>pid_t getppid()</code></b></font></large>
+<ul>
+<li> requires &nbsp;<large><code>#include &lt;sys/types.h&gt;</code></large>
+<li> returns the parent process ID of the current process
+</ul>
+</ul>
+For more details: &nbsp;<large><code>man 2 getpid</code></large>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Process-related System Calls</span></td><td align='right'><small>25/77</small></td></tr></table>
+<p>
+Processes belong to <em>process groups</em>
+<ul>
+<li> a signal can be sent to all processes in a process group
+</ul>
+<large><font color="#008800"><b><code>pid_t getpgid(pid_t pid)</code></b></font></large>
+<ul>
+<li> returns the process group ID of specified process
+<li> if <large><code>pid</code></large> is zero, use get PGID of current process
+</ul>
+<large><font color="#008800"><b><code>int setpgid(pid_t pid, pid_t pgid)</code></b></font></large>
+<ul>
+<li> set the process group ID of specified process
+</ul>
+Both return -1 and set <large><code>errno</code></large> on failure.
+<p>
+For more details: &nbsp;<large><code>man 2 getpgid</code></large>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Process-related System Calls</span></td><td align='right'><small>26/77</small></td></tr></table>
+<p>
+Minimal example for <large><code>getpid()</code></large>:
+<p><pre>
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+<font color='#000099'>#include &lt;sys/types.h&gt;</font>
+
+int main(void)
+{
+   pid_t pid = Fork();
+   if (pid != 0)
+      printf("I am the parent (%d)\n", <font color='#000099'>getpid()</font>);
+   else
+      printf("I am the child (%d)\n", <font color='#000099'>getpid()</font>);
+   return 0;
+}
+</pre><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Process-related System Calls</span></td><td align='right'><small>27/77</small></td></tr></table>
+<p>
+<large><font color="#008800"><b><code>pid_t waitpid(pid_t pid, int *status, int options)</code></b></font></large>
+<ul>
+<li> pause current process until process <tt>pid</tt> changes state 
+<ul>
+<li> where state changes include finishing, stopping, re-starting, ...
+</ul>
+<li> ensures that child resources are released on exit
+<li> special values for <large><code>pid</code></large> ...
+<ul>
+<li> if <large><code>pid</code></large> = -1, wait on any child process
+<li> if <large><code>pid</code></large> = 0, wait on any child in process group
+<li> if <large><code>pid</code></large> &gt; 0, wait on the specified process
+</ul>
+</ul>
+<large><font color="#008800"><b><code>pid_t wait(int *status)</code></b></font></large>
+<ul>
+<li> equivalent to <large><code>waitpid(-1, &status, 0)</code></large>
+<li> pauses until one of the child processes terminates
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Process-related System Calls</span></td><td align='right'><small>28/77</small></td></tr></table>
+<p>
+More on &nbsp;<large><font color="#008800"><b><code>waitpid(pid, &status, options)</code></b></font></large>
+<ul>
+<li> <large><code>status</code></large> is set to hold info about <large><code>pid</code></large>
+<ul>
+<li> e.g. exit status if <large><code>pid</code></large> terminated
+<li> macros allow precise determination of state change <br>
+	<small>(e.g. <large><code>WIFEXITED(</code></large><i>status</i><large><code>)</code></large>, &nbsp; <large><code>WCOREDUMP(</code></large><i>status</i><large><code>)</code></large>)</small>
+</ul>
+<li> <large><code>options</code></large> provide variations in <large><code>waitpid()</code></large> behaviour
+<ul>
+<li> default: wait for child process to terminate
+<li> <large><code>WNOHANG</code></large>: return immediately if no child has exited
+<li> <large><code>WCONTINUED</code></large>: return if a stopped child has been restarted
+</ul>
+</ul>
+For more information: &nbsp;<large><code>man 2 waitpid</code></large>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Process-related System Calls</span></td><td align='right'><small>29/77</small></td></tr></table>
+<p>
+Minimal example for <large><code>wait()</code></large>:
+<p><pre>
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/types.h&gt;
+<font color='#000099'>#include &lt;sys/wait.h&gt;</font>
+
+int main(void)
+{
+   pid_t pid;
+   pid = fork();
+   if (pid == 0)
+      printf("I am the child.\n");
+   else {
+      <font color='#000099'>wait(NULL);</font>
+      printf("I am the parent.\n");
+   }
+   return 0;
+}
+</pre><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Exercise 3: Forking, etc.</span></td><td align='right'><small>30/77</small></td></tr></table>
+<p>
+Write a small program that
+<ul>
+<li> <large><code>fork()</code></large>s a child process
+<li> gets both processes to print details about themselves
+<li> uses <large><code>wait()</code></large> to ensure child finishes before parent
+</ul>
+<p><pre>
+int main(void)
+{
+   pid_t pid = fork();
+   if (pid == 0)
+      <comment>// child actions</comment>
+   else
+      <comment>// parent actions</comment>
+   return 0;
+}
+</pre><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Processes: review</span></td><td align='right'><small>31/77</small></td></tr></table>
+<p>
+Process = instance of an executing program
+<ul>
+<li> defined by execution state &nbsp; <small>(incl. registers, address space, ...)</small>
+</ul>
+Operating system shares CPU among many active processes
+<p>
+On Unix/Linux:
+<ul>
+<li> each process had a unique process ID (pid)
+<li> <large><code>fork()</code></large> &nbsp; creates a copy of current process
+<small>
+<ul>
+<li> return value: parent process gets pid of new child; new child gets 0
+</ul>
+</small>
+<li> <large><code>wait()</code></large> &nbsp; parent process waits for child to change state
+<li> <large><code>execve()</code></large> &nbsp; transforms current process into different program
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Processes: review</span></td><td align='right'><small>32/77</small></td></tr></table>
+<p>
+How Unix creates processes:
+<p><div class='center'>
+<img alt="[Diagram:Pics/processes/fork-exec-small.png]" src="Pics/processes/fork-exec-small.png">
+</div><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Process-related System Calls</span></td><td align='right'><small>33/77</small></td></tr></table>
+<p>
+<large><font color="#008800"><b><code>int kill(pid_t <i>ProcID</i>, int <i>SigID</i>)</code></b></font></large>
+<ul>
+<li> requires &nbsp;<large><code>#include &lt;signal.h&gt;</code></large>
+<li> send signal <large><code><i>SigID</i></code></large> to process <large><code><i>ProcID</i></code></large>
+<li> various signals <small>(POSIX)</small> e.g.
+<ul>
+<li> <large><code>SIGHUP</code></large> ... hangup detected on controlling terminal/process
+<li> <large><code>SIGINT</code></large> ... interrupt from keyboard (control-C)
+<li> <large><code>SIGKILL</code></large> ... kill signal &nbsp; <small>(e.g. <large><code>kill -9</code></large>)</small>
+<li> <large><code>SIGILL</code></large> ... illegal instruction
+<li> <large><code>SIGFPE</code></large> ... floating point exception <small>(e.g. divide by zero)</small>
+<li> <large><code>SIGSEGV</code></large> ... invalid memory reference
+<li> <large><code>SIGPIPE</code></large> ... broken pipe <small>(no processes reading from pipe)</small>
+</ul>
+<li> if successful, return 0; &nbsp; on error, return -1 and set <large><code>errno</code></large>
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Process-related System Calls</span></td><td align='right'><small>34/77</small></td></tr></table>
+<p>
+Minimal example for <large><code>kill()</code></large>:
+<p><pre>
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+<font color='#000099'>#include &lt;signal.h&gt;</font>
+
+int main(void)
+{
+   pid_t pid;
+   pid = fork();
+   if (pid == 0)
+      printf("I am the child.\n");
+   else {
+      printf("I am the parent.\n");
+      <font color='#000099'>kill(pid, SIGKILL)</font>;
+   }
+   return 0;
+}
+</pre><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Process-related System Calls</span></td><td align='right'><small>35/77</small></td></tr></table>
+<p>
+<large><font color="#008800"><b><code>int execve(char *<i>Path</i>, char *<i>Argv</i>[], char *<i>Envp</i>[])</code></b></font></large>
+<ul>
+<li> transforms current process by executing <large><code><i>Path</i></code></large> object
+<ul>
+<li> <large><code><i>Path</i></code></large> must be an executable, binary or script <small>(starting with <large><code>#!</code></large>)</small>
+</ul>
+<li> passes arrays of strings to new process
+<ul>
+<li> both arrays terminated by a <large><code>NULL</code></large> pointer element
+<li> <large><code><i>envp</i>[]</code></large> contains strings of the form <large><code>key=value</code></large>
+</ul>
+<li> much of the state of the original process is lost, e.g.
+<ul>
+<li> new virtual address space is created, signal handlers reset, ...
+</ul>
+<li> new process inherits open file descriptors from original process
+<li> on error, returns -1 and sets <large><code>errno</code></large>
+<li> if successful, does not return
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Process-related System Calls</span></td><td align='right'><small>36/77</small></td></tr></table>
+<p>
+On Unix, processes create new different processes via:
+<p><pre>
+pid_t pid = Fork(); 
+if (pid &gt; 0)
+   <comment>// parent ...</comment>
+   wait(NULL); <comment>// wait for child to complete</comment>
+else {
+   <comment>// child ...</comment>
+   char *cmd = "/x/y/z"; <comment>// name of executable</comment>
+   char **args;
+   ... <comment>// set up command-line arguments</comment>
+   char **env;
+   ... <comment>// set up environment varables</comment>
+
+   <font color='#000099'>execve(cmd, args, env)</font>; <comment>// child is transformed</comment>
+}
+</pre><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Exercise 4: Executor</span></td><td align='right'><small>37/77</small></td></tr></table>
+<p>
+Write a small program that will run other programs
+<ul>
+<li> reads, one per line, values for command-line arguments
+<li> trims each line and stores pointer to it in array <large><code>args[]</code></large>
+<li> uses <large><code>args[0]</code></large> as the path of the program to run
+<li> uses <large><code>args[]</code></large> as <large><code>argv[]</code></large> in the exec'd process
+<li> passes no <large><code>envp[]</code></large> values &nbsp; <small>(i.e. <large><code>envp[0]=NULL</code></large>)</small>
+<li> invokes the specified program then waits for it to complete
+<li> displays the exit status of the invoked process
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Process Control Flow</span></td><td align='right'><small>38/77</small></td></tr></table>
+<p>
+When a process is executing ...
+<ul>
+<li> fetch instruction from memory[PC]; &nbsp; PC++
+<li> decode and execute instruction
+<ul>
+<li> if jump-type instruction, PC = new address
+<li> if regular instruction, carry out operation
+</ul>
+<li> repeat above
+</ul>
+This type of regular control flow is produced by the process
+<p>
+Regular control flow can be interrupted &rArr; <em>exceptional control flow</em>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Process Control Flow</span></td><td align='right'><small>39/77</small></td></tr></table>
+<p>
+<em>Exceptional events</em> are
+<ul>
+<li> "unexpected" conditions occuring during program execution
+<li> which require some form of immediate action &nbsp;<small>(maybe just quit)</small>
+</ul>
+<p>
+Two types of exceptional events
+<ul>
+<li> <em>exceptions</em> ... from <font color='#CC0000'>conditions within</font> an executing program
+<ul>
+<li> often, fatal to continued execution of program
+</ul>
+<li> <em>interrupts</em> ... from <font color='#CC0000'>events external</font> to the program
+<ul>
+<li> often, require some action and then execution can continue
+</ul>
+</ul>
+Typically cause a <em>signal</em> to be sent to a process
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Process Control Flow</span></td><td align='right'><small>40/77</small></td></tr></table>
+<p>
+Effect of exceptions/interrupts on control flow
+<p><div class='center'>
+<img alt="[Diagram:Pics/opsys/exception-small.png]" src="Pics/opsys/exception-small.png">
+</div><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Process Control Flow</span></td><td align='right'><small>41/77</small></td></tr></table>
+<p>
+<em>System calls</em> typically operate via exceptions (traps)
+<ul>
+<li> process makes system call (e.g. <large><code>fork()</code></large>)
+<li> generates an exception which
+<ul>
+<li> transfers control to system call handler (in privileged mode)
+<li> carries out system-level operations <small>(e.g. modify process table)</small>
+<li> then returns control to the process (in user mode)
+</ul>
+</ul>
+Effect is like a normal function call (<large><code>jal</code></large> ... <large><code>jr</code></large>)
+<p>
+Critical difference is transfer to system space (privileged mode)
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Signals</span></td><td align='right'><small>42/77</small></td></tr></table>
+<p>
+Signals can be generated from a variety of sources
+<ul>
+<li> from another process via <large><code>kill()</code></large>
+<li> from the operating system <small>(e.g. timer)</small>
+<li> from within the process <small>(e.g. system call)</small>
+<li> from a fault in the process <small>(e.g. div-by-zero)</small>
+<li> from a device <small>(e.g. disk read completes)</small>
+</ul>
+<br>
+Processes can define how they want to handle signals
+<ul>
+<li> using the <large><font color="#008800"><b><code>signal()</code></b></font></large> library function &nbsp; <small>(simple)</small>
+<li> using the <large><font color="#008800"><b><code>sigaction()</code></b></font></large> system call &nbsp; <small>(powerful)</small>
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Signals</span></td><td align='right'><small>43/77</small></td></tr></table>
+<p>
+Signals from internal process activity, e.g.
+<ul>
+<li> <large><code>SIGILL</code></large> ... illegal instruction &nbsp;&nbsp; <small>(Term by default)</small>
+<li> <large><code>SIGABRT</code></large> ... generated by <large><code>abort()</code></large> &nbsp;&nbsp; <small>(Core by default)</small>
+<li> <large><code>SIGFPE</code></large> ... floating point exception &nbsp;&nbsp; <small>(Core by default)</small>
+<li> <large><code>SIGSEGV</code></large> ... invalid memory reference &nbsp;&nbsp; <small>(Core by default)</small>
+</ul>
+<p>
+Signals from external process events, e.g.
+<ul>
+<li> <large><code>SIGINT</code></large> ... interrupt from keyboard &nbsp;&nbsp; <small>(Term by default)</small>
+<li> <large><code>SIGPIPE</code></large> ... broken pipe &nbsp;&nbsp; <small>(Term by default)</small>
+<li> <large><code>SIGCHLD</code></large> ... child process stopped or died &nbsp;&nbsp; <small>(Ignored by default)</small>
+<li> <large><code>SIGTSTP</code></large> ... stop typed at tty (control-Z) &nbsp;&nbsp; <small>(Stop by default)</small>
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Signals</span></td><td align='right'><small>44/77</small></td></tr></table>
+<p>
+Processes can choose to ignore most signals.
+<p>
+If not ignored, signals can be handled in several default ways
+<ul>
+<li> Term ... terminate the process
+<li> Core ... terminate the process, dump core
+<li> Stop ... stop the process
+<li> Cont ... continue the process if currently stopped
+</ul>
+Or you can write your own <em>signal handler</em>
+<p>
+See &nbsp; <large><code>man 7 signal</code></large> &nbsp; for details of signals and default handling.
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Signal Handlers</span></td><td align='right'><small>45/77</small></td></tr></table>
+<p>
+<em>Signal Handler</em> = a function invoked in response to a signal
+<ul>
+<li> knows which signal it was invoked by
+<li> needs to ensure that invoking signal <small>(at least)</small> is blocked
+<li> carries out appropriate action; may return
+</ul>
+<p><div class='center'>
+<img alt="[Diagram:Pics/processes/signal-small.png]" src="Pics/processes/signal-small.png">
+</div><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Signal Handlers</span></td><td align='right'><small>46/77</small></td></tr></table>
+<p>
+<large><font color="#008800"><b><code>SigHnd signal(int <i>SigID</i>, SigHnd <i>Handler</i>)</code></b></font></large>
+<ul>
+<li> define how to handle a particular signal
+<li> requires <large><code>&lt;signal.h&gt;</code></large> &nbsp;&nbsp; <small>(library function, not syscall)</small>
+<li> <large><code><i>SigID</i></code></large> is one of the OS-defined signals
+<ul>
+<li> <small>e.g. <large><code>SIGHUP</code></large>, <large><code>SIGCHLD</code></large>, <large><code>SIGSEGV</code></large>, ... but not <large><code>SIGKILL</code></large>, <large><code>SIGSTOP</code></large></small>
+</ul>
+<li> <large><code><i>Handler</i></code></large> can be one of ...
+<ul>
+<li> <large><code>SIG_IGN</code></large> ... ignore signals of type <large><code><i>SigID</i></code></large>
+<li> <large><code>SIG_DFL</code></large> ... use default handler for <large><code><i>SigID</i></code></large>
+<li> a user-defined function to handle <large><code><i>SigID</i></code></large> signals
+</ul>
+<li> note: &nbsp;<large><font color="#008800"><b><code>typedef void (*SigHnd)(int);</code></b></font></large>
+<li> returns previous value of signal handler, or <large><code>SIG_ERR</code></large>
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Signal Handlers</span></td><td align='right'><small>47/77</small></td></tr></table>
+<p>
+How to define and install a signal handler function:
+<p><pre><small>
+void myHandler(int sigID)
+{
+   <comment>// we don't normally put</comment>
+   <comment>// printf() in a signal handler</comment>
+   printf("Caught SIGINT\n");
+   exit(0);
+}
+
+int main(int argc, char **argv)
+{
+   if (<font color='#000099'>signal(SIGINT, myHandler)</font> == SIG_ERR) {
+      printf("Can't set signal handler\n");
+      exit(1);
+   }
+   sleep(3); <comment>// wait for signal</comment>
+   printf("No signal received\n");
+   return 0;
+}
+</small></pre><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Exercise 5: Catching Signals</span></td><td align='right'><small>48/77</small></td></tr></table>
+<p>
+The <large><code>sleep(N)</code></large> function pauses a process until
+<ul>
+<li> <large><code>N</code></large> seconds have passed, or
+<li> a signal is received by the process
+</ul>
+It returns the number of un-slept seconds
+<ul>
+<li> i.e. if stopped after M seconds, returns N-M
+</ul>
+Write a program that
+<ul>
+<li> gets number of seconds (N) as <large><code>argv[1]</code></large>
+<li> starts sleeping for N seconds
+<li> when awakened, prints how many seconds actually slept
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Signal Handlers</span></td><td align='right'><small>49/77</small></td></tr></table>
+<p>
+<large><font color="#008800"><b><code>int sigaction(int <i>sigID</i>,<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;struct sigaction *<i>newAct</i>,<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;struct sigaction *<i>oldAct</i>)</code></b></font></large>
+<ul>
+<li> <large><code><i>sigID</i></code></large> is one of the OS-defined signals
+<ul>
+<li> <small>e.g. <large><code>SIGHUP</code></large>, <large><code>SIGCHLD</code></large>, <large><code>SIGSEGV</code></large>, ... but not <large><code>SIGKILL</code></large>, <large><code>SIGSTOP</code></large></small>
+</ul>
+<li> <large><code><i>newAct</i></code></large> defines how signal should be handled
+<li> <large><code><i>oldAct</i></code></large> saves a copy of how signal was handled
+<li> if <large><code><i>newAct</i>.sa_handler == SIG_IGN</code></large>, signal is ignored
+<li> if <large><code><i>newAct</i>.sa_handler == SIG_DFL</code></large>, default handler is used
+<li> on success, returns 0; &nbsp;on error, returns -1 and sets <large><code>errno</code></large>
+</ul>
+<br>
+For much more information: &nbsp;<large><code>man 2 sigaction</code></large>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Signal Handlers</span></td><td align='right'><small>50/77</small></td></tr></table>
+<p>
+Details on <large><font color="#008800"><b><code>struct sigaction</code></b></font></large> ...
+<ul>
+<li> <large><font color="#008800"><b><code>void (*sa_handler)(int)</code></b></font></large>
+<ul>
+<li> pointer to a handler function, or <large><code>SIG_IGN</code></large> or <large><code>SIG_DFL</code></large>
+</ul>
+<li> <large><font color="#008800"><b><code>void (*sa_sigaction)(int, siginfo_t *, void *)</code></b></font></large>
+<ul>
+<li> pointer to handler function; used if <large><code>SA_SIGINFO</code></large> flag is set
+<li> allows more context info to be passed to handler
+</ul>
+<li> <large><font color="#008800"><b><code>sigset_t sa_mask</code></b></font></large>
+<ul>
+<li> a mask, where each bit specifies a signal to be blocked
+</ul>
+<li> <large><font color="#008800"><b><code>int sa_flags</code></b></font></large>
+<ul>
+<li> flags to modify how signal is treated <br>
+&nbsp;&nbsp;&nbsp; <small>(e.g. don't block signal in its own handler)</small>
+</ul>
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Signal Handlers</span></td><td align='right'><small>51/77</small></td></tr></table>
+<p>
+Details on <large><font color="#008800"><b><code>siginfo_t</code></b></font></large> ...
+<ul>
+<li> <large><font color="#008800"><b><code>si_signo</code></b></font></large> ... signal being handled
+<li> <large><font color="#008800"><b><code>si_errno</code></b></font></large> ... any <large><code>errno</code></large> value associated with signal
+<li> <large><font color="#008800"><b><code>si_pid</code></b></font></large> ... process ID of sending process
+<li> <large><font color="#008800"><b><code>si_uid</code></b></font></large> ... user ID of owner of sending process
+<li> <large><font color="#008800"><b><code>si_status</code></b></font></large> ... exit value for process termination
+<li> etc. etc. etc.
+</ul>
+<br>
+For more details: &nbsp;<large><code>bits/types/siginfo_t.h</code></large>&nbsp; <small>(system-dependent)</small>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Exercise 6: Catching Signals</span></td><td align='right'><small>52/77</small></td></tr></table>
+<p>
+Write signal handlers that
+<ol>
+<li> catch signals HUP and TERM
+<ul>
+<li> print a message saying which signal was caught
+</ul>
+<li> catch SEGV when an invalid memory reference occurs
+<ul>
+<li> print an informative message
+<li> challenge problem: print the invalid address
+</ul>
+<li> catch signal INT
+<ul>
+<li> print a message to show process owner
+<li> requires the use of <large><code>sa_sigaction</code></large> 
+<ul>
+</ol>
+<br>
+Note: you would <i>not</i> normally use <large><code>printf()</code></large> in signal handlers
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Interrupts</span></td><td align='right'><small>53/77</small></td></tr></table>
+<p>
+<em>Interrupts</em> are signals which
+<ul>
+<li> cause normal process execution to be suspended
+<li> an <em>interrupt handler</em> then carries out tasks related to interrupt
+<li> control is then returned to the original process
+</ul>
+Example (input/output):
+<ul>
+<li> process requests data from disk <small>(will take 100ms)</small>
+<li> if process can do other work not related to requested data
+<ul>
+<li> keep executing ...
+</ul>
+<li> when data fetched from disk, process is interrupted
+<li> handler places data in a buffer for access by process
+<li> in-memory computation resumes
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Interrupts</span></td><td align='right'><small>54/77</small></td></tr></table>
+<p>
+Example (process pre-emption):
+<ul>
+<li> process runs for a while (normal control flow)
+<li> receives a timer signal from the O/S
+<li> process is suspended and its state is saved
+<li> process is eventually added to <i>runnable</i> queue
+<li> removed from front of queue and state restored
+<li> process continues from where it was suspended
+</ul>
+<br>
+Different to first example; has no effect on process state
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Interrupts</span></td><td align='right'><small>55/77</small></td></tr></table>
+<p>
+Interrupts are frequently associated with input/output
+<ul>
+<li> in-memory computations are very fast (<i>ns</i>)
+<li> input/output operations are very slow (<i>ms</i>)
+</ul>
+<br>
+Can't afford for a process to <i>wait</i> for i/o
+<ul>
+<li> suspend and place on "waiting for i/o" queue
+<li> when i/o complete, device sends "I'm done" signal
+<li> process is then added to "runnable" queue
+<li> eventually, process resumes, with new data available
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Exceptions</span></td><td align='right'><small>56/77</small></td></tr></table>
+<p>
+Above exceptions are low-level, system ones.
+<p>
+Alternative notion of <em>exceptions</em>:
+<ul>
+<li> unexpected conditions which arise during computation
+<li> unexpected but <i>not</i> unanticipated &nbsp; <small>(robust code)</small>
+</ul>
+Examples:
+<p><pre>
+if ((p = malloc(sizeof(<i>Type</i>))) == NULL)
+   ...
+
+if (scanf("%d", &n) != 1)
+   ...
+
+avg = (n != 0) ? sum/n : 0;
+</pre><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Exceptions</span></td><td align='right'><small>57/77</small></td></tr></table>
+<p>
+Such exceptions require handling in context of computation
+<p>
+Example:
+<ul>
+<li> <large><code>create()</code></large> a data structure using multiple <large><code>malloc()</code></large>s
+<li> part-way through function, one <large><code>malloc()</code></large> fails
+<li> if abandoning <large><code>create()</code></large>, need to clean up previous <large><code>malloc()</code></large>s
+</ul>
+<br>
+Many programming languages have special mechanisms for this
+<p><pre>
+try { <i>SomeCode</i> } catch { <i>HandleFailuresInCode</i> }
+</pre><p>
+C does not have generic exception handling; roll your own.
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Exercise 7: Cleaning up after failure</span></td><td align='right'><small>58/77</small></td></tr></table>
+<p>
+The following function can leave garbage on failure
+<p><pre>
+struct { uint len; char *buf } MyString;
+
+MyString *makeString(char *str)
+{
+   int n = strlen(str);
+   char *s = malloc(n*sizeof(char));
+   if (s == NULL) return NULL;
+   MyString *ms = malloc(sizeof(MyString));
+   if (ms == NULL) return NULL;
+   ms->len = n;  ms->buf = s;
+   memcpy(ms->buf, str, n);
+   return ms;
+}
+</pre><p>
+Fix it so that it doesn't.
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Multi-tasking</span></td><td align='right'><small>59/77</small></td></tr></table>
+<p>
+<em>Multi-tasking</em> = multiple processes are "active" at the same time
+<ul>
+<li> processes are not necessarily <i>executing</i> simultaneously
+<ul>
+<li> although this could happen if there are multiple CPUs
+</ul>
+<li> more likely, have a mixture of processes
+<ul>
+<li> some are <em>blocked</em> waiting on a signal (e.g. i/o completion)
+<li> some are <em>runnable</em> (ready to execute)
+<li> one is running (on each CPU)
+</ul>
+</ul>
+Aims to give the appearance of multiple simultaneous processes
+<ul>
+<li> by switching process after one runs for a defined <em>time slice</em>
+<li> after timer counts down, current process is <em>pre-empted</em>
+<li> a new process is selected to run by the system <em>scheduler</em>
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Process States</span></td><td align='right'><small>60/77</small></td></tr></table>
+<p>
+How process state changes during execution ...
+<p><br>
+<p><div class='center'>
+<img alt="[Diagram:Pics/opsys/process-states-small.png]" src="Pics/opsys/process-states-small.png">
+</div><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Scheduling</span></td><td align='right'><small>61/77</small></td></tr></table>
+<p>
+<em>Scheduling</em> = selecting which process should run next
+<ul>
+<li> processes are organised into <em>priority queue(s)</em>
+<ul>
+<li> where "highest" priority process is always at head of queue
+</ul>
+<li> priority determined by multiple factors, e.g.
+<ul>
+<li> system processes have higher priority than user processes
+<li> longer-running processes might have lower priority
+<li> memory-intensive processes might have lower priority
+<li> processes can also suggest their own priority
+</ul>
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Scheduling</span></td><td align='right'><small>62/77</small></td></tr></table>
+<p>
+Linux process scheduler ...
+<ul>
+<li> is priority-based &nbsp;<small>(priority queue of processes)</small>
+<li> Linux process priorities are values in range -20..139
+<li> lower values represent higher priority
+<li> factors in determining priority
+<ul>
+<li> user processes have lower priority than system processes
+<li> processes have <em>nice</em>ness value <small>-20 (highest) .. +20 (lowest)</small>
+<li> recent CPU time usage by the process
+</ul>
+<li> scheduler chooses highest priority process from runnable
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Scheduling</span></td><td align='right'><small>63/77</small></td></tr></table>
+<p>
+Abstract view of the OS scheduler
+<p><pre>
+onTimerInterrupt()
+{
+   save state of currently executing process
+   newPID = dequeue(runnableProcesses)
+   setup state of newPID
+   - make process's Page Table active
+   - load pages in working set
+   - load process's registers
+   transfer control to newPID
+   - leave kernel mode
+   - set PC to saved PC from process
+}
+</pre><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='section'>Device Management</span></td><td align='right'></td></tr></table>
+<p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Device Management</span></td><td align='right'><small>65/77</small></td></tr></table>
+<p>
+<br>
+<p><div class='center'>
+<img alt="[Diagram:Pics/opsys/hardware5-small.png]" src="Pics/opsys/hardware5-small.png">
+</div><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>I/O Devices</span></td><td align='right'><small>66/77</small></td></tr></table>
+<p>
+Input/Output (I/O) devices
+<ul>
+<li> allow programs to communicate with "the outside" world
+<li> have significantly different characteristics to memory-based data
+</ul>
+Memory-based data
+<ul>
+<li> fast (ns) random access via (virtual) address
+<li> transfer data in units of bytes, halfwords, words
+</ul>
+Device data
+<ul>
+<li> much slower (ms) access, random or sequential
+<li> often, transfer data in <em>blocks</em> <small>(e.g. 128B, 512B, 4KB, ...)</small>
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... I/O Devices</span></td><td align='right'><small>67/77</small></td></tr></table>
+<p>
+Hard Disk characteristics:
+<ul>
+<li> address specified by track and sector &nbsp; <small>(s/t &cong; 200, s.size 512B)</small>
+<li> access time (move to track + wait for sector + read block)
+</ul>
+<p><div class='center'>
+<img alt="[Diagram:Pics/devices/disk-small.png]" src="Pics/devices/disk-small.png">
+</div><p>
+Typical cost: 10ms seek + 5ms latency + 0.1ms transfer
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... I/O Devices</span></td><td align='right'><small>68/77</small></td></tr></table>
+<p>
+Solid State Disk (SSD) characteristics:
+<ul>
+<li> high capacity (GB), high cost, reading faster than writing
+<li> pages 512B..4KB, blocks 32..128 pages, R/W page-at-a-time
+<li> pages updated by erase then write, &nbsp;limit on #updates
+<li> avg read time 11&times;10<sup>-6</sup> sec, &nbsp; avg write time 15&times;10<sup>-6</sup> sec
+</ul>
+<p><div class='center'>
+<img alt="[Diagram:Pics/devices/ssd-small.png]" src="Pics/devices/ssd-small.png">
+</div><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... I/O Devices</span></td><td align='right'><small>69/77</small></td></tr></table>
+<p>
+Example: network transfer
+<ul>
+<li> destination specified by IP address, packet size < 1KB
+<li> transfer time includes
+<ul>
+<li> d<sub>T</sub> transmission delay <small>... time to push data packet onto "the wire"</small>
+<li> d<sub>P</sub> propagation delay <small>... time for packet to travel along "the wire"</small>
+<li> d<sub>C</sub> processing delay <small>... time to check header, re-route to next node</small>
+<li> d<sub>Q</sub> queueing delay <small>... time waiting on node before transmission</small>
+<li> need to calculate for N hops, so &nbsp;&cong; N(d<sub>T</sub> + d<sub>P</sub> + d<sub>C</sub> + d<sub>Q</sub>)
+</ul>
+</ul>
+Typical transfer time: 0.5ms (local ethernet), 200ms (internet), ...
+<p>
+Can check transmission times using the <large><code>ping</code></large> command
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... I/O Devices</span></td><td align='right'><small>70/77</small></td></tr></table>
+<p>
+Other types of devices ...
+<ul>
+<li> keyboard ... byte-by-byte input, often line-buffered
+<li> screen ... pixel-array output, typically via GPU
+<li> mouse ... transmit X,Y movement and button presses
+<li> camera ... convert video signal, frame-by-frame, to digital stream
+<li> microphone ... convert analog audio signal to digital stream
+</ul>
+<br>
+<div class='center'>
+<img src="Pics/misc/keyboard-small.png">
+&nbsp;&nbsp; <img src="Pics/misc/monitor-small.png">
+&nbsp;&nbsp; <img src="Pics/misc/webcam-small.png">
+</div>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Device Drivers</span></td><td align='right'><small>71/77</small></td></tr></table>
+<p>
+Each type of device has its own unique access protocol
+<ul>
+<li> special control and data registers
+<li> locations (buffers) for data to be read/written
+</ul>
+<em>Device drivers</em> = code chunks to control an i/o device
+<ul>
+<li> are core components of the operating system
+<li> sometimes written in assembler
+</ul>
+Typical protocol to manipulate devices
+<ul>
+<li> send request for operation <small>(e.g. read, write, get status)</small>
+<li> receive interrupt when request is completed
+</ul>
+For more details: see COMP2121 or ELEC2142
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Memory-mapped I/O</span></td><td align='right'><small>72/77</small></td></tr></table>
+<p>
+<em>Memory-mapped input/output</em>
+<ul>
+<li> operating system defines special memory address
+<li> user programs perform i/o by getting/putting data into memory
+<li> virtual memory addresses are associated with
+<ul>
+<li> data buffers of i/o device
+<li> control registers of i/o device
+</ul>
+</ul>
+Advantages:
+<ul>
+<li> uses existing memory access logic cirucits &rArr; less hardware
+<li> can use full range of CPU operations on device memory
+<p>
+<small>(cf. having limited set of special instructions to manipulate i/o devices)</small>
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Memory-mapped I/O</span></td><td align='right'><small>73/77</small></td></tr></table>
+<p>
+Example of using memory-mapped I/O.
+<p>
+Assume memory address of disk device is 0x80000200
+<p><pre>
+write:
+    li  $t0, <i>CodeForWrite</i>
+    sw  $t0, 0x80000200
+    li  $t0, <i>LogicalBlockAddress</i>
+    sw  $t0, 0x80000200
+    li  $t0, <i>MemAddressOfData</i>
+    sw  $t0, 0x80000200
+</pre><p>
+Transfers data from memory onto the disk at specified block.
+<p><br>
+<small>Disclaimer: the above is illustrative only; it is not real MIPS/SPIM code.</small>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Devices on Unix/Linux</span></td><td align='right'><small>74/77</small></td></tr></table>
+<p>
+Operating system hides devices behind layer of abstraction
+<ul>
+<li> e.g. on Unix, many devices appear as a stream of bytes, like a file
+<li> can be manipulated by <large><code>open()</code></large>, <large><code>read()</code></large>, <large><code>write()</code></large> ...
+</ul>
+Device "files" can be accessed via the file system under <tt>/dev</tt>, e.g.
+<ul>
+<li> <large><font color="#008800"><b><code>/dev/disk<i>N</i></code></b></font></large> ... (part of) a hard drive
+<li> <large><font color="#008800"><b><code>/dev/tty<i>N</i></code></b></font></large> ... a terminal device
+<li> <large><font color="#008800"><b><code>/dev/pty<i>N</i></code></b></font></large> ... a pseudo-terminal device
+</ul>
+Other interesting "devices" in <tt>/dev</tt>
+<ul>
+<li> <large><font color="#008800"><b><code>/dev/mem</code></b></font></large> ... the physical memory &nbsp; <tiny>(protected)</tiny>
+<li> <large><font color="#008800"><b><code>/dev/null</code></b></font></large> ... data sink or empty source
+<li> <large><font color="#008800"><b><code>/dev/random</code></b></font></large> ... stream of pseudo-random numbers
+</ul>
+<p>
+<small>Device names are very system-specific, let alone operating-system specific.</small>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Exercise 8: Contents of pseudo-devices</span></td><td align='right'><small>75/77</small></td></tr></table>
+<p>
+How can we examine the contents of "devices" like ... ?
+<ul>
+<li> <large><font color="#008800"><b><code>/dev/mem</code></b></font></large> ... the physical memory <small>(protected)</small>
+<li> <large><font color="#008800"><b><code>/dev/null</code></b></font></large> ... data sink or empty source
+<li> <large><font color="#008800"><b><code>/dev/random</code></b></font></large> ... stream of pseudo-random numbers
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Devices on Unix/Linux</span></td><td align='right'><small>76/77</small></td></tr></table>
+<p>
+Two standard types of "device files" ...
+<p>
+<em>Character devices</em> &nbsp; <small>(aka character special files)</small>
+<ul>
+<li> provide <i>unbuffered</i> direct access to hardware devices
+<li> programmers interact with device by writing individual bytes
+<li> do not necessarily provide byte-by-byte hardware i/o (e.g. disks)
+</ul>
+<em>Block devices</em> &nbsp; <small>(aka block special files)</small>
+<ul>
+<li> provide <i>buffered</i> access to hardware devices
+<li> programmers interact with device by writing chunks of bytes
+<li> data transferred to device via operating system buffers
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Devices on Unix/Linux</span></td><td align='right'><small>77/77</small></td></tr></table>
+<p>
+<large><font color="#008800"><b><code>int ioctl(int <i>FileDesc</i>, int <i>Request</i>, void *<i>Arg</i>)</code></b></font></large><br>
+<small>(usually spelled out, sometimes pronounced "eye-octal")</small>
+
+<ul>
+<li> manipulates parameters of special files <small>(behind open <large><code><i>FileDesc</i></code></large>)</small>
+<li> <large><code><i>Request</i></code></large> is a device-specific request code,
+<li> <large><code><i>Arg</i></code></large> is either an integer modifier or pointer to data block
+<li> requires &nbsp;<large><code>#include &lt;<i>sys</i>/ioctl.h&gt;</code></large>, returns 0 if ok, -1 if error
+</ul>
+<br>
+Example: SCSI disk driver
+<ul>
+<li> <large><code>HDIO_GETGEO</code></large> ... get disk info in (heads,sectors,cylinders,...)
+<li> <large><code>BLKGETSIZE</code></large> ... get device size in sectors
+<li> in both cases, <large><code><i>Arg</i></code></large> is a pointer to an appropriate object
+</ul>
+<p><hr><p>
+<small><small>Produced: 8 Aug 2019</small></small>
+</body>
+</html>

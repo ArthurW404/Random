@@ -1,0 +1,812 @@
+<html>
+<head>
+<title>Week 03</title>
+<link href='notes.css' rel='stylesheet' type='text/css'>
+</head>
+<body>
+<p><span class='title'>Week 03</span><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>CPU Architecture</span></td><td align='right'><small>1/38</small></td></tr></table>
+<p>
+A typical modern CPU has
+<ul>
+<li> a set of data registers
+<li> a set of control registers (incl PC)
+<li> an arithmetic-logic unit (ALU)
+<li> access to memory (RAM)
+<li> a set of simple instructions
+<ul>
+<li> transfer data between memory and registers
+<li> push values through the ALU to compute results
+<li> make tests and transfer control of execution
+</ul>
+</ul>
+<br>
+Different types of processors have different configurations of the above
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... CPU Architecture</span></td><td align='right'><small>2/38</small></td></tr></table>
+<p>
+<p><br><p>
+<p><div class='center'>
+<img alt="[Diagram:Pics/processor/cpu-mem-small.png]" src="Pics/processor/cpu-mem-small.png">
+</div><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Fetch-Execute Cycle</span></td><td align='right'><small>3/38</small></td></tr></table>
+<p>
+All CPUs have program execution logic like:
+<p><pre>
+while (1)
+{
+   instruction = memory[PC]
+   PC++  <comment>// move to next instr</comment>
+   if (instruction == HALT)
+      break
+   else
+      execute(instruction)
+}
+</pre><p>
+<br>
+PC = Program Counter, a CPU register which keeps track of execution
+<p>
+Note that some instructions may modify PC further <small>(e.g. JUMP)</small>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Fetch-Execute Cycle</span></td><td align='right'><small>4/38</small></td></tr></table>
+<p>
+Executing an <large><code>instruction</code></large> involves
+<ul>
+<li> determine what the <font color='#CC0000'>operator</font> is
+<li> determine which <font color='#009900'>registers</font>, if any, are involved
+<li> determine which <font color='#0000CC'>memory location</font>, if any, is involved
+<li> carry out the operation with the relevant operands
+<li> store result, if any, in appropriate register
+</ul>
+Example instruction encodings <small>(not from a real machine)</small>:
+<p><div class='center'>
+<img alt="[Diagram:Pics/processor/instructions-small.png]" src="Pics/processor/instructions-small.png">
+</div><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Assembly Language</span></td><td align='right'><small>5/38</small></td></tr></table>
+<p>
+Instructions are simply bit patterns within a 32-bit bit-string
+<p>
+Could describe machine programs as a sequence of hex digits, e.g.
+<p><pre>
+Address   Content
+0x100000  0x3c041001
+0x100004  0x34020004
+0x100008  0x0000000c
+0x10000C  0x03e00008
+</pre><p>
+<p>
+Assembly languages provide a symbolic way of giving machine code
+<ul>
+<li> write instructions using mnemonics rather than hex codes
+<li> refer to registers using either numbers or names
+<li> can associate names to memory addresses
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>MIPS Architecture</span></td><td align='right'><small>6/38</small></td></tr></table>
+<p>
+MIPS is a well-known and relatively simple architecture
+<ul>
+<li> used in e.g. Silicon Graphics, NEC, Nintendo64, ...
+</ul>
+We consider the MIPS32 version of the MIPS family
+<ul>
+<li> <large><font color="#008800"><b><code>qtspim</code></b></font></large> ... provides a GUI front-end, useful for debugging
+<li> <large><font color="#008800"><b><code>spim</code></b></font></large> ... command-line based version, useful for testing
+<li> <large><font color="#008800"><b><code>xspim</code></b></font></large> ... GUI front-end, useful for debugging, only in CSE labs
+</ul>
+Executables and source: <font color='#000099'>http://spimsimulator.sourceforge.net/</font>
+<p>
+Source code for browsing under <font color='#000099'>/home/cs1521/spim</font>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... MIPS Architecture</span></td><td align='right'><small>7/38</small></td></tr></table>
+<p>
+MIPS CPU has
+<ul>
+<li> 32 &times; 32-bit general purpose registers
+<li> 16 &times; 64-bit double-precision registers
+<li> PC ... 32-bit register <small>(always aligned on 4-byte boundary)</small>
+<li> HI,LO ... for storing results of multiplication and division
+</ul>
+Registers can be referred to as <large><code>$0..$31</code></large> or by symbolic names
+<p>
+Some registers have special uses e.g.
+<ul>
+<li> register <large><code>$0</code></large> always has value 0, cannot be written
+<li> registers <large><code>$1</code></large>, <large><code>$26</code></large>, <large><code>$27</code></large> reserved for use by system
+</ul>
+More details on following slides ...
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... MIPS Architecture</span></td><td align='right'><small>8/38</small></td></tr></table>
+<p>
+Registers and their usage
+<p>
+<table cellspacing="8">
+<tr><td><b>Reg</b></td><td>&nbsp;</td><td><b>Name</b></td><td>&nbsp;</td><td><b>Notes</b></td></tr>
+<tr>
+ <td><large><code>$0</code></large></td><td>&nbsp;</td><td><large><code>zero</code></large></td><td>&nbsp;</td>
+ <td><small>the value 0, not changeable</small></td>
+</tr>
+<tr>
+ <td><large><code>$1</code></large></td><td>&nbsp;</td><td><large><code>$at</code></large></td><td>&nbsp;</td>
+ <td><small><b>a</b>ssembler <b>t</b>emporary; reserved for assembler use</small></td>
+</tr>
+<tr>
+ <td><large><code>$2</code></large></td><td>&nbsp;</td><td><large><code>$v0</code></large></td><td>&nbsp;</td>
+ <td><small><b>v</b>alue from expression evaluation or function return</small></td>
+</tr>
+<tr>
+ <td><large><code>$3</code></large></td><td>&nbsp;</td><td><large><code>$v1</code></large></td><td>&nbsp;</td>
+ <td><small><b>v</b>alue from expression evaluation or function return</small></td>
+</tr>
+<tr>
+ <td><large><code>$4</code></large></td><td>&nbsp;</td><td><large><code>$a0</code></large></td><td>&nbsp;</td>
+ <td><small>first <b>a</b>rgument to a function/subroutine, if needed</small></td>
+</tr>
+<tr>
+ <td><large><code>$5</code></large></td><td>&nbsp;</td><td><large><code>$a1</code></large></td><td>&nbsp;</td>
+ <td><small>second <b>a</b>rgument to a function/subroutine, if needed</small></td>
+</tr>
+<tr>
+ <td><large><code>$6</code></large></td><td>&nbsp;</td><td><large><code>$a2</code></large></td><td>&nbsp;</td>
+ <td><small>third <b>a</b>rgument to a function/subroutine, if needed</small></td>
+</tr>
+<tr>
+ <td><large><code>$7</code></large></td><td>&nbsp;</td><td><large><code>$a3</code></large></td><td>&nbsp;</td>
+ <td><small>fourth <b>a</b>rgument to a function/subroutine, if needed</small></td>
+</tr>
+<tr valign="top">
+ <td><large><code>$8</code></large>..<large><code>$15</code></large></td><td>&nbsp;</td><td><large><code>$t0</code></large>..<large><code>$t7</code></large></td><td>&nbsp;</td>
+ <td><small><b>t</b>emporary; must be saved by caller to subroutine;<br>subroutine can overwrite</small></td>
+</tr>
+</table>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... MIPS Architecture</span></td><td align='right'><small>9/38</small></td></tr></table>
+<p>
+More register usage ...
+<p>
+<table cellspacing="8">
+<tr><td><b>Reg</b></td><td>&nbsp;</td><td><b>Name</b></td><td>&nbsp;</td><td><b>Notes</b></td></tr>
+<tr valign="top">
+ <td><nobr><large><code>$16</code></large></code></large>..<large><code><large><code>$23</code></large></nobr></td><td>&nbsp;</td><td><nobr><large><code>$s0</code></large>..<large><code>$s7</code></large></nobr></td><td>&nbsp;</td>
+ <td><small><b>s</b>afe function variable;<br>must not be overwritten by called subroutine</small></td>
+</tr>
+<tr valign="top">
+ <td><large><code>$24</code></large>..<large><code>$25</code></large></td><td>&nbsp;</td><td><large><code>$t8</code></large>..<large><code>$t9</code></large></td><td>&nbsp;</td>
+ <td><small><b>t</b>emporary; must be saved by caller to subroutine;<br>subroutine can overwrite</small></td>
+</tr>
+<tr valign="top">
+ <td><large><code>$26</code></large>..<large><code>$27</code></large></td><td>&nbsp;</td><td><large><code>$k0</code></large>..<large><code>$k1</code></large></td><td>&nbsp;</td>
+ <td><small>for <b>k</b>ernel use; may change unexpectedly</small></td>
+</tr>
+<tr>
+ <td><large><code>$28</code></large></td><td>&nbsp;</td><td><large><code>$gp</code></large></td><td>&nbsp;</td>
+ <td><small><b>g</b>lobal <b>p</b>ointer</small></td>
+</tr>
+<tr>
+ <td><large><code>$29</code></large></td><td>&nbsp;</td><td><large><code>$sp</code></large></td><td>&nbsp;</td>
+ <td><small><b>s</b>tack <b>p</b>ointer</small></td>
+</tr>
+<tr>
+ <td><large><code>$30</code></large></td><td>&nbsp;</td><td><large><code>$fp</code></large></td><td>&nbsp;</td>
+ <td><small><b>f</b>rame <b>p</b>ointer</small></td>
+</tr>
+<tr>
+ <td><large><code>$31</code></large></td><td>&nbsp;</td><td><large><code>$ra</code></large></td><td>&nbsp;</td>
+ <td><small><b>r</b>eturn <b>a</b>ddress</small> of most recent caller</td>
+</tr>
+</table>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... MIPS Architecture</span></td><td align='right'><small>10/38</small></td></tr></table>
+<p>
+Floating point register usage ...
+<p>
+<table cellspacing="8">
+<tr><td><b>Reg</b></td><td>&nbsp;</td><td><b>Notes</b></td></tr>
+<tr valign="top">
+<tr valign="top">
+ <td><large><code>$f0</code></large>..<large><code>$f2</code></large></td><td>&nbsp;</td>
+ <td><small>hold floating-point function results</small></td>
+</tr>
+<tr valign="top">
+ <td><large><code>$f4</code></large>..<large><code>$f10</code></large></td><td>&nbsp;</td>
+ <td><small>temporary registers; not preserved across function calls</small></td>
+</tr>
+<tr valign="top">
+ <td><large><code>$f12</code></large>..<large><code>$f14</code></large></td><td>&nbsp;</td>
+ <td><small>used for first two double-precision function arguments</small></td>
+</tr>
+<tr valign="top">
+ <td><large><code>$f16</code></large>..<large><code>$f18</code></large></td><td>&nbsp;</td>
+ <td><small>temporary registers; used for expression evaluation</small></td>
+</tr>
+<tr valign="top">
+ <td><large><code>$f20</code></large>..<large><code>$f30</code></large></td><td>&nbsp;</td>
+ <td><small>saved registers; value is preserved across function calls</small></td>
+</tr>
+</table>
+<p>
+Notes:
+<ul>
+<li> registers come in pairs of 2 &times; 32-bits
+<li> only even registers are addressed for double-precision
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>MIPS Assembly Language</span></td><td align='right'><small>11/38</small></td></tr></table>
+<p>
+MIPS assembly language programs contain
+<ul>
+<li> comments ... introduced by <large><code>#</code></large>
+<li> labels ... appended with <large><code>:</code></large>
+<li> directives ... symbol beginning with <large><code>.</code></large>
+<li> assembly language instructions
+</ul>
+Programmers need to specify
+<ul>
+<li> data objects that live in the data region
+<li> functions <small>(instruction sequences)</small> that live in the code/text region
+</ul>
+Each instruction or directive appears on its own line
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... MIPS Assembly Language</span></td><td align='right'><small>12/38</small></td></tr></table>
+<p>
+Example MIPS assembler program:
+<p><pre>
+<comment># hello.s ... print "Hello, MIPS"</comment>
+
+       <font color='#009900'>.data</font>          <comment># the data segment</comment>
+<font color='#CC0000'>msg</font>:   <font color='#009900'>.asciiz</font> "Hello, MIPS\n"
+
+       <font color='#009900'>.text</font>          <comment># the code segment</comment>
+       <font color='#009900'>.globl</font> main
+<font color='#CC0000'>main</font>:
+        la $a0, msg   <comment># load the argument string</comment>
+        li $v0, 4     <comment># load the system call (print)</comment>
+        syscall       <comment># print the string</comment>
+        jr $ra        <comment># return to caller (__start)</comment>
+</pre><p>
+<br>
+Color coding: <font color='#CC0000'>label</font>, <font color='#009900'>directive</font>, <font color='#999999'>comment</font>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... MIPS Assembly Language</span></td><td align='right'><small>13/38</small></td></tr></table>
+<p>
+General structure of MIPS programs
+<p><pre>
+<comment># Prog.s ... comment giving description of function</comment>
+<comment># Author ...</comment>
+
+     .data     <comment># variable declarations follow this line</comment>
+               <comment># ...</comment>
+
+     .text     <comment># instructions follow this line   </comment>
+     .globl main
+main:          <comment># indicates start of code</comment>
+               <comment># (i.e. first user instruction to execute)</comment>
+               <comment># ...</comment>
+
+<comment># End of program; leave a blank line to make SPIM happy</comment>
+</pre><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... MIPS Assembly Language</span></td><td align='right'><small>14/38</small></td></tr></table>
+<p>
+Another MIPS assembler program:
+<p><pre>
+    <font color='#009900'>.data</font>
+<font color='#CC0000'>a</font>:  <font color='#009900'>.word</font> 42            <comment># int a = 42;</comment>
+<font color='#CC0000'>b</font>:  <font color='#009900'>.space</font> 4            <comment># int b;</comment>
+    <font color='#009900'>.text</font>
+    <font color='#009900'>.globl</font> main
+<font color='#CC0000'>main</font>:   
+    lw   $t0, a         <comment># reg[t0] = a</comment>
+    li   $t1, 8         <comment># reg[t1] = 8</comment>
+    add  $t0, $t0, $t1  <comment># reg[t0] = reg[t0]+reg[t1]</comment>
+    li   $t2, 666       <comment># reg[t2] = 666</comment>
+    mult $t0, $t2       <comment># (Lo,Hi) = reg[t0]*reg[t2]</comment>
+    mflo $t0            <comment># reg[t0] = Lo</comment>
+    sw   $t0, b         <comment># b = reg[t0]</comment>
+    ....
+</pre><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... MIPS Assembly Language</span></td><td align='right'><small>15/38</small></td></tr></table>
+<p>
+MIPS programs assume the following memory layout
+<p>
+<table cellpadding="8">
+<tr><td><b>Region</b></td><td>&nbsp;</td><td><b>Address</b></b></td><td>&nbsp;</td><td><b>Notes</b></td></tr>
+<tr valign="top">
+ <td>text</td><td>&nbsp;</td><td><large><code>0x00400000</code></large></td><td>&nbsp;</td>
+ <td><small>contains only instructions; read-only; cannot expand</small></td>
+</tr>
+<tr valign="top">
+ <td>data</td><td>&nbsp;</td><td><large><code>0x10000000</code></large></td><td>&nbsp;</td>
+ <td><small>data objects; readable/writable; can be expanded</small></td>
+</tr>
+<tr valign="top">
+ <td>stack</td><td>&nbsp;</td><td><large><code>0x7fffefff</code></large></td><td>&nbsp;</td>
+ <td><small>grows down from that address; readable/writable</small></td>
+</tr>
+<tr valign="top">
+ <td>k_text</td><td>&nbsp;</td><td><large><code>0x80000000</code></large></td><td>&nbsp;</td>
+ <td><small>kernel code; read-only; only accessible kernel mode</small></td>
+</tr>
+<tr valign="top">
+ <td>k_data</td><td>&nbsp;</td><td><large><code>0x90000000</code></large></td><td>&nbsp;</td>
+ <td><small>kernel data; read/write; only accessible kernel mode</small></td>
+</tr>
+</table>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>MIPS Instructions</span></td><td align='right'><small>16/38</small></td></tr></table>
+<p>
+MIPS has several classes of instructions:
+<ul>
+<li> <em>load and store</em> .. transfer data between registers and memory
+<li> <em>computational</em> ... perform arithmetic/logical operations
+<li> <em>jump and branch</em> ... transfer control of program execution
+<li> <em>coprocessor</em> ... standard interface to various co-processors
+<li> <em>special</em> ... miscellaneous tasks (e.g. syscall)
+</ul>
+And several <em>addressing modes</em> for each instruction
+<ul>
+<li> between memory and register <small>(direct, indirect)</small>
+<li> constant to register (immediate)
+<li> register + register + destination register
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... MIPS Instructions</span></td><td align='right'><small>17/38</small></td></tr></table>
+<p>
+MIPS instructions are 32-bits long, and specify ...
+<ul>
+<li> an operation (e.g. load, store, add, branch, ...)
+<li> one or more operands (e.g. registers, memory addresses, constants)
+</ul>
+Some possible instruction formats
+<p><div class='center'>
+<img alt="[Diagram:Pics/processor/mips-instr-small.png]" src="Pics/processor/mips-instr-small.png">
+</div><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Exercise 1: Add two numbers</span></td><td align='right'><small>18/38</small></td></tr></table>
+<p>
+Write MIPS assembler that behaves like
+<p><pre>
+int x = 3;
+int y = 4;
+void main(void)
+{
+   printf("%d\n", x+y);
+}
+</pre><p>
+Hints:
+<ul>
+<li> syscall 1 prints a number, syscall 4 prints a string
+<li> <large><code>.word</code></large> allocates 4 bytes in memory and initialises it
+<li> addition needs two values loaded into registers
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Exercise 2: Adding Interactively</span></td><td align='right'><small>19/38</small></td></tr></table>
+<p>
+Modify the program so that it behaves as follows:
+<p><pre>
+int x;  int y;
+
+void main(void) {
+   printf("First number: ");
+   scanf("%d", &x);
+   printf("Second number: ");
+   scanf("%d", &y);
+   printf("%d\n", x+y);
+}
+</pre><p>
+Hints:
+<ul>
+<li> <large><code>syscall</code></large>s: read_int:5, print_str:4, print_int:1
+<li> read_int leaves the number read in <large><code>$v0</code></large>
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Addressing Modes</span></td><td align='right'><small>20/38</small></td></tr></table>
+<p>
+Memory addresses can be given by
+<ul>
+<li> symbolic name (label) <small>(effectively, a constant)</small>
+<li> indirectly via a register <small>(effectively, pointer dereferencing)</small>
+</ul>
+Examples:
+<p><pre>
+prog:
+a:    lw    $t0, var     <comment># address via name</comment>
+b:    lw    $t0, ($s0)   <comment># indirect addressing</comment>
+c:    lw    $t0, 4($s0)  <comment># indexed addressing</comment>
+</pre><p>
+If <large><code>$s0</code></large> contains <large><code>0x10000000</code></large> and <large><code>&var</code></large> = <large><code>0x100000008</code></large>
+<ul>
+<li> computed address for <large><code>a:</code></large> is <large><code>0x100000008</code></large>
+<li> computed address for <large><code>b:</code></large> is <large><code>0x100000000</code></large>
+<li> computed address for <large><code>c:</code></large> is <large><code>0x100000004</code></large>
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Addressing Modes</span></td><td align='right'><small>21/38</small></td></tr></table>
+<p>
+Addressing modes in MIPS
+<p>
+<table cellpadding="8">
+<tr><td><b>Format</b></td><td>&nbsp;&nbsp;</td><td><b>Address computation</b></td></tr>
+<tr>
+ <td>(register)</td><td>&nbsp;&nbsp;</td>
+ <td>address = *register = contents of register</td>
+</tr>
+<tr>
+ <td>k</td><td>&nbsp;&nbsp;</td>
+ <td>address = k</td>
+</tr>
+<tr>
+ <td>k(register)</td><td>&nbsp;&nbsp;</td>
+ <td>address = k + *register</td>
+</tr>
+<tr>
+ <td>symbol</td><td>&nbsp;&nbsp;</td>
+ <td>address = &amp;symbol = address of symbol</td>
+</tr>
+<tr>
+ <td>symbol &pm; k</td><td>&nbsp;&nbsp;</td>
+ <td>address = &amp;symbol &pm; k</td>
+</tr>
+<tr>
+ <td>symbol &pm; k(register)</td><td>&nbsp;&nbsp;</td>
+ <td>address = &amp;symbol &pm; (k + *register)</td>
+</tr>
+</table>
+<p>
+where <i>k</i> is a literal constant value (e.g. <large><code>4</code></large> or <large><code>0x10000000</code></large>)
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Addressing Modes</span></td><td align='right'><small>22/38</small></td></tr></table>
+<p>
+Examples of load/store and addressing:
+<p><pre>
+    .data
+vec: .space   16      <comment># int vec[4];</comment>
+    .text             <comment># 16 bytes of storage</comment>
+    .globl  main
+main:
+    la  $t0, vec      <comment># reg[t0] = &vec</comment>
+    li  $t1, 5        <comment># reg[t1] = 5</comment>
+    sw  $t1, ($t0)    <comment># vec[0] = reg[t1]</comment>
+    li  $t1, 13       <comment># reg[t1] = 13</comment>
+    sw  $t1, 4($t0)   <comment># vec[1] = reg[t1]</comment>
+    li  $t1, -7       <comment># reg[t1] = -7</comment>
+    sw  $t1, 8($t0)   <comment># vec[2] = reg[t1]</comment>
+    li  $t2, 12       <comment># reg[t2] = 12</comment>
+    li  $t1, 42       <comment># reg[t1] = 42</comment>
+    sw  $t1, vec($t2) <comment># vec[3] = reg[t1]</comment>
+</pre><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Exercise 3: MIPS Addressing</span></td><td align='right'><small>23/38</small></td></tr></table>
+<p>
+Consider the following memory contents and MIPS instructions
+<p><pre>
+Label Address      Content         Instructions
+x:    0x10010000   0x00010101    * la $t0, x
+y:    0x10010004   0x10010000    * lw $t0, x
+z:    0x10010008   0x0000002A      la $s0, z
+eol:  0x1001000C   0x0000000A    * lw $t0, ($s0)
+                                   li $s0, 8
+Notes:                           * lw $t0, y($s0)
+0x10101 = 65793                    lw $s0, y
+0x101   = 257                    * lw $t0  ($s0)
+                                   li $s0, 4
+                                 * lw $t0, x+4($s0)
+</pre><p>
+What will be (a) the computed address, (b) the value of the destination
+register (<large><code>$t0</code></large>) after each of the starred MIPS instructions is executed?
+<p><hr><p>
+<continuex>
+Consider the following memory contents and MIPS instructions
+<p><pre>
+Label Address      Content         Instructions
+x:    0x10010000   0x00010101    * la $t0, x
+y:    0x10010004   0x10010000    * lw $t0, x
+z:    0x10010008   0x0000002A      la $s0, z
+eol:  0x1001000C   0x0000000A    * lw $t0, ($s0)
+                                   li $s0, 8
+Notes:                           * lw $t0, y($s0)
+0x10101 = 65793                    lw $s0, y
+0x101   = 257                    * lw $t0  ($s0)
+                                   li $s0, 4
+                                 * lw $t0, x+4($s0)
+</pre><p>
+Write C code that (roughly) behaves like this assembly code.
+<p>
+Assume: global variables with the same names as the registers.
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Exercise 4: Check the results</span></td><td align='right'><small>25/38</small></td></tr></table>
+<p>
+Write MIPS assembler code to display the values
+from the previous exercise.
+<p>
+Use <large><code>$a0</code></large> as the destination register for all examples
+<p>
+E.g.
+<p><pre>
+lw $a0, y($s0)   <comment># load value into arg[0] register</comment>
+li $v0, 1        <comment># set up for print_int syscall</comment>
+syscall          <comment># print the number</comment>
+</pre><p>
+Print a "\n" after each number
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Operand Sizes</span></td><td align='right'><small>26/38</small></td></tr></table>
+<p>
+MIPS instructions can manipulate different-sized operands
+<ul>
+<li> single bytes, &nbsp; two bytes ("halfword"), &nbsp; four bytes ("word")
+</ul>
+Many instructions also have variants for signed and unsigned
+<p>
+Leads to many opcodes for a (conceptually) single operation, e.g.
+<ul>
+<li> <large><code>LB</code></large> ... load one byte from specified address
+<li> <large><code>LBU</code></large> ... load unsigned byte from specified address
+<li> <large><code>LH</code></large> ... load two bytes from specified address
+<li> <large><code>LHU</code></large> ... load unsigned 2-bytes from specified address
+<li> <large><code>LW</code></large> ... load four bytes (one word) from specified address
+<li> <large><code>LA</code></large> ... load the specified address
+</ul>
+All of the above specify a destination register
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Exercise 5: Operand Sizes</span></td><td align='right'><small>27/38</small></td></tr></table>
+<p>
+Consider the following memory contents and MIPS instructions
+<p><pre>
+Label Address      Content         Instructions
+x:    0x10010000   0x00010101    * la  $t0, x
+y:    0x10010004   0x00008000    * lw  $t0, x
+z:    0x10010008   0x0000002A    * lh  $t0, x
+                                 * lh  $t0, y
+Notes:                           * lhu $t0, y
+0x10101 = 65793                  * lbu $t0, y
+0x101   = 257
+0x8000  = 32768
+</pre><p>
+What will be the value (in hexadecimal) of the destination
+register after each of the starred MIPS instructions is executed?
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Why Study Assembler?</span></td><td align='right'><small>28/38</small></td></tr></table>
+<p>
+Useful to know assembly language because ...
+<ul>
+<li> sometimes you are <i>required</i> to use it &nbsp; <small>(e.g. device handlers)</small>
+<li> improves your understanding of how C programs execute
+<ul>
+<li> very helpful when debugging
+<li> able to avoid using known inefficient constructs
+</ul>
+<li> uber-nerdy performance tweaking &nbsp; <small>(squeezing out last nano-s)</small>
+<ul>
+<li> re-write that critical (frequently-used) function in assembler
+</ul>
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>MIPS vs SPIM</span></td><td align='right'><small>29/38</small></td></tr></table>
+<p>
+MIPS is a machine architecture, including instruction set
+<p>
+SPIM is an <em>emulator</em> for the MIPS instruction set
+<ul>
+<li> reads text files containing instruction + directives
+<li> converts to machine code and loads into "memory"
+<li> provides debugging capabilities
+<ul>
+<li> single-step, breakpoints, view registers/memory, ...
+</ul>
+<li> provides mechanism to interact with operating system (syscall)
+</ul>
+Also provides extra instructions, mapped to MIPS core set
+<ul>
+<li> provide convenient/mnemonic ways to do common operations
+<li> e.g. &nbsp;<large><code>move $s0,$v0</code></large>&nbsp; rather than &nbsp;<large><code>addu $s0,$0,$v0</code></large>
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>Using SPIM</span></td><td align='right'><small>30/38</small></td></tr></table>
+<p>
+Three ways to execute MIPS code with SPIM
+<ul>
+<li> <large><font color="#008800"><b><code>spim</code></b></font></large> ... command line tool
+<ul>
+<li> load programs using <large><code>-file</code></large> option
+<li> interact using stdin/stdout via login terminal
+</ul>
+<li> <large><font color="#008800"><b><code>qtspim</code></b></font></large> ... GUI environment 
+<ul>
+<li> load programs via a load button
+<li> interact via a pop-up stdin/stdout terminal
+</ul>
+<li> <large><font color="#008800"><b><code>xspim</code></b></font></large> ... GUI environment 
+<ul>
+<li> similar to <large><code>qtspim</code></large>, but not as pretty
+<li> requires X-windows server
+</ul>
+</ul>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Using SPIM</span></td><td align='right'><small>31/38</small></td></tr></table>
+<p>
+Command-line tool:
+<p><div class='center'>
+<img alt="[Diagram:Pics/mips/use-spim-small.png]" src="Pics/mips/use-spim-small.png">
+</div><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... Using SPIM</span></td><td align='right'><small>32/38</small></td></tr></table>
+<p>
+GUI tool:
+<p><div class='center'>
+<img alt="[Diagram:Pics/mips/use-qtspim-small.png]" src="Pics/mips/use-qtspim-small.png">
+</div><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='heading'>MIPS Instruction Set</span></td><td align='right'><small>33/38</small></td></tr></table>
+<p>
+The MIPS processor implements a base set of instructions, e.g.
+<ul>
+<li> <large><code>lw</code></large>, <large><code>sw</code></large>, <large><code>add</code></large>, <large><code>sub</code></large>, <large><code>and</code></large>, <large><code>or</code></large>, <large><code>sll</code></large>, <large><code>slt</code></large>, <large><code>beq</code></large>, <large><code>j</code></large>, <large><code>jal</code></large>, ...
+</ul>
+Augmented by a set of pseudo-instructions, e.g.
+<ul>
+<li> <large><code>move</code></large>, <large><code>rem</code></large>, <large><code>la</code></large>, <large><code>li</code></large>, <large><code>blt</code></large>, ...
+</ul>
+And with some instructions having a range of addressing modes.
+<p>
+<p><div class='center'>
+<img alt="[Diagram:Pics/processor/mips-instr-small.png]" src="Pics/processor/mips-instr-small.png">
+</div><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... MIPS Instruction Set</span></td><td align='right'><small>34/38</small></td></tr></table>
+<p>
+Examples:
+<p><pre><small>
+lw   $t1,label     <comment># reg[t1] = memory[&label]</comment>
+sw   $t3,label     <comment># memory[&label] = reg[t3]</comment>
+                   <comment>#   <span style="font-size:75%">&label must be 4-byte aligned</span></comment>
+<font color='#009900'>la</font>   $t1,label     <comment># reg[t1] = &label</comment>
+lui  $t2,const     <comment># reg[t2] = const &lt;< 16</comment>
+and  $t0,$t1,$t2   <comment># reg[t0] = reg[t1] & reg[t2]</comment>
+add  $t0,$t1,$t2   <comment># reg[t0] = reg[t1] + reg[t2]</comment>
+                   <comment>#   <span style="font-size:75%">add as signed (2's complement) ints</span></comment>
+addi $t2,$t3, 5    <comment># reg[t2] = reg[t3] + 5</comment>
+                   <comment>#   <span style="font-size:75%">"add immediate" (no sub immediate)</span></comment>
+mult $t3,$t4       <comment># (Hi,Lo) = reg[t3] * reg[t4]</comment>
+                   <comment>#   <span style="font-size:75%">store 64-bit result in registers Hi,Lo</span></comment>
+seq  $t7,$t1,$t2   <comment># reg[t7] = (reg[t1]==reg[t2]) ? 1 : 0</comment>
+j    label         <comment># PC = &label</comment>
+beq  $t1,$t2,label <comment># PC = &label if (reg[t1] == reg[t2])</comment>
+nop                <comment># do nothing</comment>
+</small></pre><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... MIPS Instruction Set</span></td><td align='right'><small>35/38</small></td></tr></table>
+<p>
+Special jump instruction for invoking subroutines
+<p><pre><small>
+jal  label         <comment># make a subroutine call</comment>
+                   <comment># save PC in $ra, set PC to &label</comment>
+                   <comment># use $a0,$a1 as params, $v0 as return</comment>
+</small></pre><p>
+<p><div class='center'>
+<img alt="[Diagram:Pics/processor/fn-call-small.png]" src="Pics/processor/fn-call-small.png">
+</div><p>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... MIPS Instruction Set</span></td><td align='right'><small>36/38</small></td></tr></table>
+<p>
+Implementation of pseudo-instructions:
+<p><pre><small>
+What you write           Machine code produced
+---------------------    ---------------------
+
+<font color='#009900'>li</font>   $t5, const          ori  $t5, $0, const
+
+<font color='#009900'>la</font>   $t3, label          lui  $at, &label[31..16]
+                         ori  $t3, $at, &label[15..0]
+
+<font color='#009900'>bge</font>  $t1, $t2, label     slt  $at, $t1, $t2
+                         beq  $at, $0, label
+
+<font color='#009900'>blt</font>  $t1, $t2, label     slt  $at, $t1, $t2
+                         bne  $at, $0, label
+</small></pre><p>
+Note: use of <large><code>$at</code></large> register for intermediate results
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... MIPS Instruction Set</span></td><td align='right'><small>37/38</small></td></tr></table>
+<p>
+SPIM interacts with stdin/stdout via <large><code>syscall</code></large>s
+<p>
+<table border="1" cellpadding="8" cellspacing="0">
+<thead>
+<tr><td><b>Service</b></td><td><b>Code</b></td><td><b>Arguments</b></td><td><b>Result</b></td></tr>
+</thead>
+<tbody>
+<tr>
+ <td>print_int</td><td>1</td><td><tt>$a0</tt> = integer</td><td>&nbsp;</td>
+</tr>
+<tr>
+ <td>print_float</td><td>2</td><td><tt>$f12</tt> = float</td><td>&nbsp;</td>
+</tr>
+<tr>
+ <td>print_double</td><td>3</td><td><tt>$f12</tt> = double</td><td>&nbsp;</td>
+</tr>
+<tr>
+ <td>print_string</td><td>4</td><td><tt>$a0</tt> = char *</td><td>&nbsp;</td>
+</tr>
+<tr>
+ <td>read_int</td><td>5</td><td>&nbsp;</td><td>integer in <tt>$v0</tt></td>
+</tr>
+<tr>
+ <td>read_float</td><td>6</td><td>&nbsp;</td><td>float in <tt>$f0</tt></td>
+</tr>
+<tr>
+ <td>read_double</td><td>7</td><td>&nbsp;</td><td>double in <tt>$f0</tt></td>
+</tr>
+<tr valign="top">
+ <td>read_string</td><td>8</td><td><tt>$a0</tt> = buffer, <tt>$a1</tt> = length</td><td>string in buffer <br><small>(including "\n\0")</small></td>
+</tr>
+</tbody>
+</table>
+<p><hr><p>
+<table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><span class='cont'>... MIPS Instruction Set</span></td><td align='right'><small>38/38</small></td></tr></table>
+<p>
+Directives <small>(instructions to assembler, not MIPS instructions)</small>
+<p><pre><small>
+    .text        <comment># following instructions placed in text</comment>
+    .data        <comment># following objects placed in data</comment>
+
+    .globl       <comment># make symbol available globally</comment>
+
+a:  .space 18    <comment># uchar a[18];  or  uint a[4];</comment>
+    .align 2     <comment># align next object on 2<sup>2</sup>-byte addr</comment>
+
+i:  .word 2      <comment># unsigned int i = 2;</comment>
+v:  .word 1,3,5  <comment># unsigned int v[3] = {1,3,5};</comment>
+h:  .half 2,4,6  <comment># unsigned short h[3] = {2,4,6};</comment>
+b:  .byte 1,2,3  <comment># unsigned char b[3] = {1,2,3};</comment>
+f:  .float 3.14  <comment># float f = 3.14;</comment>
+
+s:  .asciiz "abc"
+                 <comment># char s[4] {'a','b','c','\0'};</comment>
+t:  .ascii "abc"
+                 <comment># char s[3] {'a','b','c'};</comment>
+</small></pre><p>
+<p><hr><p>
+<small><small>Produced: 8 Aug 2019</small></small>
+</body>
+</html>
